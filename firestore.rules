@@ -1,0 +1,34 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 進行状態ドキュメント(先生の進行管理画面が更新する)
+    // ログイン不要の教室内利用のため、読み書きともに制限なし。
+    // (host.html のURLを生徒に共有しないことで運用上守る)
+    match /quiz/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // 投票データ
+    // ・誰でも読める(集計・ランキング表示のため)
+    // ・作成は「同じdocIdがまだ存在しない場合」のみ許可 → 二重投票や回答の書き換えを防ぐ
+    // ・更新は不可
+    // ・削除は先生の管理画面(host.html)から生徒データを消せるように許可している。
+    //   認証機能がないため、この削除権限は理論上生徒側からも行使できてしまう
+    //   (host.htmlのURLを生徒に共有しないことで運用上守る)。
+    match /votes/{voteId} {
+      allow read: if true;
+      allow create: if !exists(/databases/$(database)/documents/votes/$(voteId));
+      allow update: if false;
+      allow delete: if true;
+    }
+
+    // 接続状況(生徒端末が一定間隔でハートビートを書き込み、hostが接続中人数を表示する)
+    // docIdは端末ID(voterId)なので生徒1人につき1件のみ。個人情報は含まない。
+    match /presence/{voterId} {
+      allow read: if true;
+      allow write: if true;
+    }
+  }
+}
