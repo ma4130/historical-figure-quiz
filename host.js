@@ -4,6 +4,7 @@ import {
 } from "./firebase.js";
 import { computeStandings, voteSpeedMs, difficultyText } from "./scoring.js";
 import { PHONE_REVEAL_DELAY_MS } from "./settings.js";
+import { questionsReady, onQuestionsChange, questionsSource } from "./questions-store.js";
 
 const ONLINE_THRESHOLD_MS = 30000;
 const COUNTDOWN_MS = 3000;
@@ -11,6 +12,10 @@ let advancing = false;
 
 const QUESTIONS = window.QUESTIONS;
 const appEl = document.getElementById("app");
+
+// 問題作成画面で保存した問題を読み込んでから始める。あとで変わったら描き直す
+await questionsReady;
+onQuestionsChange(() => render());
 
 function genSessionId() {
   return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
@@ -102,6 +107,9 @@ async function nextQuestion() {
     return;
   }
   if (advancing) return;
+  // 押し間違いで先へ進まないよう、もう一度確かめる
+  if (!confirm(`第${next + 1}問を出題しますか?
+(3秒のカウントダウンのあと、全員の画面に問題が出ます)`)) return;
   advancing = true;
   const sessionId = currentState.sessionId;
   try {
@@ -124,7 +132,20 @@ async function startVoting(sessionId, qIndex) {
 
 async function showResults() {
   if (!currentState || currentState.currentQuestion < 0) return;
+  const online = onlineSeats();
+  const waiting = [...online].filter((seat) => !votedSeats.has(seat)).length;
+  const msg = `第${currentState.currentQuestion + 1}問の結果を発表しますか?
+`
+    + `回答済み ${votedSeats.size}人${waiting ? ` ・ 接続中でまだ答えていない人 ${waiting}人` : ""}
+`
+    + "(発表すると回答の受付を締め切ります)";
+  if (!confirm(msg)) return;
   await setDoc(STATE_DOC, { ...currentState, phase: "results" });
+}
+
+async function showStuckQuestion(s) {
+  if (!confirm(`第${s.currentQuestion + 1}問を表示しますか?`)) return;
+  await startVoting(s.sessionId, s.currentQuestion);
 }
 
 // 終了すると投影画面でドラムロール→優勝発表。スマホには少し遅れて公開する(ネタバレ防止)
@@ -253,9 +274,14 @@ function render() {
     : s.phase === "voting" ? "結果を見る" : "次の問題へ";
 
   appEl.innerHTML = `
+    <div class="card host-links">
+      <a class="btn secondary" href="display.html" target="_blank" rel="noopener">🖥 投影画面を開く</a>
+      <a class="btn secondary" href="editor.html" target="_blank" rel="noopener">📝 問題を作成・編集する</a>
+    </div>
     <div class="card">
       <div class="badge">状態</div>
       <p>フェーズ: <b>${phaseLabel}</b> / 問題: <b>${s.currentQuestion >= 0 ? (s.currentQuestion + 1) + " / " + QUESTIONS.length : "-"}</b></p>
+      <p class="muted">使う問題: 全${QUESTIONS.length}問(${questionsSource() === "firestore" ? "問題作成画面で保存した問題" : "questions.js の問題"})</p>
       <p id="presenceCount" class="muted">接続中: ${onlineCount}人</p>
       <p id="voteCount" class="muted">回答数を集計中…</p>
       ${s.phase === "finished" ? `<p>スマホへの最終結果の公開: <b>${s.phonesRevealed === false ? (revealTimer ? "まもなく自動で公開" : "まだ") : "公開済み"}</b></p>` : ""}
@@ -273,7 +299,7 @@ function render() {
 
   document.getElementById("startBtn").onclick = startNewSession;
   document.getElementById("advanceBtn").onclick =
-    stuckCountdown ? () => startVoting(s.sessionId, s.currentQuestion)
+    stuckCountdown ? () => showStuckQuestion(s)
     : s.phase === "voting" ? showResults : nextQuestion;
   document.getElementById("finishBtn").onclick = finishQuiz;
   const revealBtn = document.getElementById("revealBtn");

@@ -415,3 +415,72 @@ table.rank tbody tr.me td { outline: 2px solid var(--primary); outline-offset: -
 .sound-ctrl input[type=range] { width: 120px; }
 .sound-big-btn { width: auto; padding: 14px 32px; font-size: clamp(1.2rem, 1.8vw, 2.2rem); }
 .sound-ok { color: var(--correct); font-weight: 700; }
+
+/* ---------- リンクのボタン(管理者画面) ---------- */
+a.btn { display: block; text-align: center; text-decoration: none; }
+.host-links { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.host-links .btn { margin-top: 0; }
+
+/* ---------- 問題作成画面 ---------- */
+.editor-page .wrap { max-width: 860px; padding-bottom: 110px; }
+.editor-tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.editor-tools .btn { width: auto; flex: 1 1 200px; margin-top: 0; font-size: 0.9rem; padding: 10px 14px; }
+.editor-warn { background: #fef2f2; color: #991b1b; border: 2px solid #fecaca; border-radius: 12px; padding: 10px 12px; font-weight: 700; }
+.q-card.has-error { outline: 3px solid var(--danger); }
+.q-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.q-head .badge { margin-bottom: 0; }
+.q-actions { display: flex; gap: 6px; }
+.icon-btn {
+  min-width: 38px; height: 38px; border-radius: 10px; border: 2px solid var(--line);
+  background: #fff; font: inherit; font-size: 1rem; cursor: pointer; color: var(--text);
+}
+.icon-btn:hover:not(:disabled) { border-color: #93c5fd; }
+.icon-btn:disabled { opacity: 0.35; cursor: default; }
+.danger-text { color: var(--danger); }
+.q-errors { color: var(--danger); font-weight: 700; margin: 10px 0 0; padding-left: 1.2em; }
+.q-grid { display: grid; grid-template-columns: 2fr 2fr 1fr; gap: 10px; margin-top: 14px; }
+@media (max-width: 600px) { .q-grid { grid-template-columns: 1fr; } }
+.field-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+.field-label select, .field-label input { margin-top: 4px; margin-bottom: 0; }
+.editor-page textarea {
+  width: 100%; padding: 10px 12px; border-radius: 12px; border: 2px solid var(--line);
+  font: inherit; font-size: 1rem; margin: 4px 0 12px; resize: vertical; color: var(--text);
+}
+.editor-page textarea:focus { outline: none; border-color: var(--primary); }
+.editor-page input[type=number] {
+  width: 100%; padding: 12px 14px; border-radius: 12px; border: 2px solid var(--line); font: inherit; font-size: 1rem;
+}
+.opt-row {
+  display: flex; align-items: center; gap: 8px; padding: 6px 8px; margin-bottom: 6px;
+  border: 2px solid var(--line); border-radius: 12px; background: #f8fafc;
+}
+.opt-row.is-correct { border-color: var(--correct); background: var(--correct-soft); }
+.opt-row .option-key { margin-right: 0; }
+.opt-row input[type=text] { flex: 1 1 auto; margin: 0; min-width: 0; }
+.opt-mark { display: flex; align-items: center; gap: 4px; white-space: nowrap; font-size: 0.85rem; font-weight: 700; color: var(--muted); }
+.opt-mark select { width: auto; margin: 0; padding: 6px 8px; }
+.check { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; margin-bottom: 4px; }
+.small-btn { width: auto; padding: 8px 16px; font-size: 0.9rem; }
+.save-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+  background: rgba(255, 255, 255, 0.96); border-top: 2px solid var(--line);
+  box-shadow: 0 -4px 16px rgba(15, 23, 42, 0.08);
+}
+.save-bar-inner { max-width: 860px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
+.save-msg { flex: 1 1 auto; font-weight: 700; color: var(--correct); font-size: 0.95rem; }
+.save-msg.dirty { color: #c2410c; }
+.save-btn { width: auto; margin: 0; padding: 12px 28px; }
+
+/* ---------- 投影画面: プレゼントの写真(ボタンで表示) ---------- */
+.prize-reveal { text-align: center; margin-top: 1.5vw; }
+.prize-reveal .btn { width: auto; padding: 1vw 3vw; font-size: clamp(1.2rem, 2vw, 2.6rem); }
+.prize-overlay {
+  position: fixed; inset: 0; z-index: 60; background: rgba(15, 23, 42, 0.82);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2vh;
+  animation: fadeIn 0.3s ease-out;
+}
+.prize-overlay .prize-title { color: #fde68a; font-size: clamp(2rem, 4vw, 5rem); margin: 0; }
+.prize-overlay .prize-img { width: auto; max-width: 90vw; max-height: 72vh; border-radius: 20px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5); }
+.prize-overlay .prize-fallback { font-size: clamp(10rem, 30vh, 24rem); }
+.prize-overlay .btn { width: auto; padding: 12px 36px; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

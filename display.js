@@ -8,6 +8,7 @@ import { runCountdown, stopCountdown, isFirstReveal, animateReveal, celebrate, p
 import { computeStandings, difficultyText, formatPoints } from "./scoring.js";
 import { play, enableSound, isSoundEnabled, onSoundChange, mountSoundControls } from "./sound.js";
 import { DRUMROLL_MS } from "./settings.js";
+import { questionsReady } from "./questions-store.js";
 
 const QUESTIONS = window.QUESTIONS;
 const appEl = document.getElementById("app");
@@ -264,7 +265,6 @@ function renderFinishedView() {
         <div class="badge">🏆 優勝</div>
         ${winners.map((w) => `<div class="winner-name">${escapeHtml(String(w.seat))}番 ${escapeHtml(w.name ?? "")}さん</div>`).join("")}
         <div class="winner-points">${formatPoints(winners[0].total)}点</div>
-        ${prizeImageHtml()}
       </div>`;
 
   const top = list.slice(0, 10);
@@ -287,7 +287,15 @@ function renderFinishedView() {
       ${list.length > top.length ? `<p class="muted center">ほか ${list.length - top.length}人</p>` : ""}
     </div>`;
 
-  render(`<div class="display-grid final-grid">${winnerCard}${table}</div>`);
+  // プレゼントの写真は最初は見せず、一番下のボタンを押したときだけ大きく出す
+  const prizeButton = winners.length === 0 ? "" : `
+    <div class="prize-reveal">
+      <button type="button" class="btn" id="showPrizeBtn">🎁 プレゼントの写真を見る</button>
+    </div>`;
+
+  render(`<div class="display-grid final-grid">${winnerCard}${table}</div>${prizeButton}`);
+  const showBtn = document.getElementById("showPrizeBtn");
+  if (showBtn) showBtn.onclick = showPrize;
 
   if (isFirstReveal(key)) {
     animateReveal(appEl);
@@ -297,7 +305,28 @@ function renderFinishedView() {
   }
 }
 
+// プレゼントの写真を画面いっぱいに出す。画面を押すか「閉じる」で消える
+function showPrize() {
+  closePrize();
+  const el = document.createElement("div");
+  el.className = "prize-overlay";
+  el.id = "prizeOverlay";
+  el.innerHTML = `
+    <div class="prize-title">🎁 優勝のプレゼント</div>
+    ${prizeImageHtml()}
+    <button type="button" class="btn secondary">閉じる</button>`;
+  el.onclick = closePrize;
+  document.body.appendChild(el);
+  play("reveal");
+  celebrate("small");
+}
+function closePrize() {
+  document.getElementById("prizeOverlay")?.remove();
+}
+
 // ---------- 進行状態 ----------
+// 問題作成画面で保存した問題を読み込んでから始める
+await questionsReady;
 let goPlayedKey = null; // 「ポーン」を鳴らした問題
 onSnapshot(STATE_DOC, (snap) => {
   const prevPhase = currentState ? currentState.phase : null;
@@ -306,7 +335,7 @@ onSnapshot(STATE_DOC, (snap) => {
   sawFinishLive = state.phase === "finished" && prevPhase !== null && prevPhase !== "finished";
   watchSessionVotes(state.sessionId || null);
   if (state.phase !== "countdown") stopCountdown();
-  if (state.phase !== "finished") { clearTimeout(finishTimer); finishStage = null; }
+  if (state.phase !== "finished") { clearTimeout(finishTimer); finishStage = null; closePrize(); }
 
   if (!state.sessionId || state.phase === "lobby") {
     renderQr();

@@ -4,6 +4,7 @@ import {
 } from "./firebase.js";
 import { runCountdown, stopCountdown, isFirstReveal, animateReveal, celebrate, prizeImageHtml } from "./effects.js";
 import { computeStandings, rankChangeText, difficultyText, formatPoints } from "./scoring.js";
+import { questionsReady } from "./questions-store.js";
 
 const PRESENCE_INTERVAL_MS = 15000;
 // 回答の送信がこの時間たっても終わらないときは「送信中…電波を確認してください」と出す
@@ -656,4 +657,6 @@ async function boot() {
   });
 }
 
+// 問題作成画面で保存した問題を読み込んでから始める
+await questionsReady;
 boot();
