@@ -213,11 +213,11 @@ async function exportCsv() {
         pq ? pq.base : 0, pq && pq.correct ? pq.streak : 0, pq ? pq.bonus : 0, pq ? pq.points : 0,
       ];
     });
-  downloadCsv("有名人クイズ_回答詳細.csv", [detailHeader, ...detailRows]);
+  downloadCsv("著名人クイズ_回答詳細.csv", [detailHeader, ...detailRows]);
 
   const rankHeader = ["順位", "出席番号", "名前", "合計点", "正解数", "合計時間(秒)"];
   const rankRows = standings.list.map((r) => [r.rank, r.seat, r.name, r.total, `${r.correctCount} / ${QUESTIONS.length}`, (r.totalSpeedMs / 1000).toFixed(3)]);
-  downloadCsv("有名人クイズ_総合ランキング.csv", [rankHeader, ...rankRows]);
+  downloadCsv("著名人クイズ_総合ランキング.csv", [rankHeader, ...rankRows]);
 }
 
 function escapeHtml(s) {

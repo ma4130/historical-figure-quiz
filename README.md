@@ -1,4 +1,4 @@
-# 有名人クイズ - リアルタイム投票クイズサイト
+# 著名人クイズ - リアルタイム投票クイズサイト
 
 生徒がログイン不要でリアルタイムに回答できるクイズサイトです(kyudenクイズを元に作り直したもの)。
 問題の形式は 単一選択・複数選択・記述・並び替え の4種類。
@@ -77,7 +77,7 @@ Firebaseコンソール → Firestore Database → ルール タブに `firestor
 ```bash
 git init
 git add .
-git commit -m "有名人クイズサイトを追加"
+git commit -m "著名人クイズサイトを追加"
 git branch -M main
 git remote add origin https://github.com/<あなたのアカウント>/<リポジトリ名>.git
 git push -u origin main
