@@ -43,7 +43,8 @@ function updatePresenceDisplay() {
   updateUnanswered();
 }
 
-// ---------- 未回答者の一覧 ----------
+// ---------- 参加状況・未回答者の一覧 ----------
+// 出題中と結果発表中は「未回答の人」、それ以外(待機中など)は「接続している人・していない人」を出す
 let votedSeats = new Set();
 
 function onlineSeats() {
@@ -60,11 +61,16 @@ function updateUnanswered() {
   const el = document.getElementById("unanswered");
   if (!el) return;
   const roster = window.ROSTER || [];
-  if (!currentState || (currentState.phase !== "voting" && currentState.phase !== "results") || roster.length === 0) {
+  if (!currentState || roster.length === 0) {
     el.innerHTML = "";
     return;
   }
   const online = onlineSeats();
+  const chip = (r, cls) => `<span class="chip ${cls}">${r.seat} ${escapeHtml(r.name)}</span>`;
+  if (currentState.phase !== "voting" && currentState.phase !== "results") {
+    el.innerHTML = participationHtml(roster, online, chip);
+    return;
+  }
   const pending = roster.filter((r) => !votedSeats.has(String(r.seat)));
   const pendingOnline = pending.filter((r) => online.has(String(r.seat)));
   const pendingOffline = pending.filter((r) => !online.has(String(r.seat)));
@@ -72,11 +78,23 @@ function updateUnanswered() {
     el.innerHTML = `<p class="all-answered">全員回答しました 🎉</p>`;
     return;
   }
-  const chip = (r, cls) => `<span class="chip ${cls}">${r.seat} ${escapeHtml(r.name)}</span>`;
   el.innerHTML = `
     <p class="unanswered-title">未回答: ${pending.length}人</p>
     ${pendingOnline.length ? `<p class="muted">接続中なのに未回答(${pendingOnline.length}人)</p><div class="chips">${pendingOnline.map((r) => chip(r, "online")).join("")}</div>` : ""}
     ${pendingOffline.length ? `<p class="muted">未接続(${pendingOffline.length}人)</p><div class="chips">${pendingOffline.map((r) => chip(r, "offline")).join("")}</div>` : ""}`;
+}
+
+// 参加状況: 名簿の全員を「接続中」「未接続」に分けて出す
+function participationHtml(roster, online, chip) {
+  const joined = roster.filter((r) => online.has(String(r.seat)));
+  const absent = roster.filter((r) => !online.has(String(r.seat)));
+  const title = absent.length === 0
+    ? `<p class="all-answered">全員接続しています 🎉(${joined.length}人)</p>`
+    : `<p class="participation-title">参加状況: 接続中 ${joined.length}人 / ${roster.length}人</p>`;
+  return `
+    ${title}
+    ${absent.length ? `<p class="muted">未接続(${absent.length}人)</p><div class="chips">${absent.map((r) => chip(r, "offline")).join("")}</div>` : ""}
+    ${joined.length && absent.length ? `<p class="muted">接続中(${joined.length}人)</p><div class="chips">${joined.map((r) => chip(r, "joined")).join("")}</div>` : ""}`;
 }
 
 onSnapshot(PRESENCE_COL, (snap) => {
