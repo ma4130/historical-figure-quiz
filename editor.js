@@ -18,6 +18,7 @@ const saveBarEl = document.getElementById("saveBar");
 
 let qs = [];          // 編集中の問題
 let dirty = false;    // 保存していない変更があるか
+let editVersion = 0;  // 編集するたびに増える番号(保存中の編集を見分ける)
 let quizState = null; // 進行状態(クイズ中の保存に注意を出すため)
 let showErrors = false;
 let lastMessage = "";
@@ -217,6 +218,7 @@ function renderSaveBar() {
 
 function setDirty() {
   dirty = true;
+  editVersion++;
   lastMessage = "";
   renderSaveBar();
 }
@@ -358,8 +360,14 @@ async function save() {
   if (inProgress() && !confirm(`いまクイズの最中です(第${quizState.currentQuestion + 1}問)。\n保存すると、点数や結果がずれることがあります。それでも保存しますか?`)) return;
   const btn = saveBarEl.querySelector(".save-btn");
   if (btn) { btn.disabled = true; btn.textContent = "保存中…"; }
+  const savingVersion = editVersion;
   try {
     await setDoc(QUESTIONS_DOC, { questions: buildQuestions(), updatedAt: serverTimestamp() });
+    if (editVersion !== savingVersion) {
+      // 保存中にさらに編集した分は、まだ保存されていない
+      renderSaveBar();
+      return;
+    }
     dirty = false;
     showErrors = false;
     lastMessage = `✓ 保存しました(${new Date().toLocaleTimeString("ja-JP")})。全画面に反映されます。`;

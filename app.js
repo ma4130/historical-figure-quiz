@@ -288,7 +288,7 @@ async function renderVoting(state, profile, token) {
 
   if (q.type === "single") {
     render(`<div class="card">${header}
-      ${q.options.map(o => `<button class="option-btn" data-key="${o.key}"><span class="option-key">${o.key}</span>${escapeHtml(o.text)}</button>`).join("")}
+      ${q.options.map(o => `<button class="option-btn" data-key="${escapeHtml(o.key)}"><span class="option-key">${escapeHtml(o.key)}</span>${escapeHtml(o.text)}</button>`).join("")}
     </div>`);
     document.querySelectorAll(".option-btn").forEach(btn => {
       btn.onclick = async () => {
@@ -299,7 +299,7 @@ async function renderVoting(state, profile, token) {
     });
   } else if (q.type === "multi") {
     render(`<div class="card">${header}
-      ${q.options.map(o => `<button class="option-btn" data-key="${o.key}"><span class="option-key">${o.key}</span>${escapeHtml(o.text)}</button>`).join("")}
+      ${q.options.map(o => `<button class="option-btn" data-key="${escapeHtml(o.key)}"><span class="option-key">${escapeHtml(o.key)}</span>${escapeHtml(o.text)}</button>`).join("")}
       <button class="btn" id="submitBtn" disabled>この内容で回答する</button>
     </div>`);
     const selected = new Set();
@@ -317,7 +317,7 @@ async function renderVoting(state, profile, token) {
     };
   } else if (q.type === "text") {
     render(`<div class="card">${header}
-      <input type="text" id="textInput" placeholder="回答を入力" ${q.inputMode ? `inputmode="${q.inputMode}"` : ""}>
+      <input type="text" id="textInput" placeholder="回答を入力" ${q.inputMode ? `inputmode="${escapeHtml(q.inputMode)}"` : ""}>
       <button class="btn" id="submitBtn">回答する</button>
     </div>`);
     document.getElementById("submitBtn").onclick = async () => {
@@ -332,11 +332,11 @@ async function renderVoting(state, profile, token) {
       <p class="muted">各項目に順番(1〜${q.items.length})を選んでください。</p>
       ${q.items.map(it => `
         <div class="order-row">
-          <select data-key="${it.key}">
+          <select data-key="${escapeHtml(it.key)}">
             <option value="">-</option>
             ${q.items.map((_, i) => `<option value="${i + 1}">${i + 1}</option>`).join("")}
           </select>
-          <div><span class="option-key">${it.key}</span>${escapeHtml(it.text)}</div>
+          <div><span class="option-key">${escapeHtml(it.key)}</span>${escapeHtml(it.text)}</div>
         </div>
       `).join("")}
       <button class="btn" id="submitBtn">この順番で回答する</button>
@@ -485,13 +485,13 @@ function renderResultsBody(q, qIndex, votes, sessionId) {
       const isCorrectOpt = q.correct.includes(o.key);
       return `
         <div class="bar-row">
-          <div class="bar-label"><span>${o.key}. ${escapeHtml(o.text)} ${isCorrectOpt ? '<span class="correct-tag">正解</span>' : ""}</span><span>${count}人 (${pct}%)</span></div>
+          <div class="bar-label"><span>${escapeHtml(o.key)}. ${escapeHtml(o.text)} ${isCorrectOpt ? '<span class="correct-tag">正解</span>' : ""}</span><span>${count}人 (${pct}%)</span></div>
           <div class="bar-track"><div class="bar-fill ${isCorrectOpt ? "correct" : ""}" style="width:${pct}%"></div></div>
         </div>`;
     }).join("");
   } else if (q.type === "text") {
     const total = votes.length || 1;
-    const counts = {};
+    const counts = Object.create(null); // 「constructor」などの回答でも正しく数える
     const correctAnswers = new Set();
     votes.forEach(v => {
       const key = String(v.answer).trim();

@@ -171,14 +171,27 @@ let revealTimer = null;
 
 async function finishQuiz() {
   if (!confirm("クイズを終了しますか?")) return;
-  const sessionId = currentState.sessionId;
   await setDoc(STATE_DOC, { ...currentState, phase: "finished", finishedAt: serverTimestamp(), phonesRevealed: false });
-  clearTimeout(revealTimer);
+  // 自動公開のタイマーは状態の購読(ensureRevealTimer)が作る
+  render();
+}
+
+// 「終了」から PHONE_REVEAL_DELAY_MS 後にスマホへ公開する。
+// 終了直後に管理者画面を開き直しても、終了時刻から数えて公開されるよう、状態が届くたびに作り直す
+function ensureRevealTimer(s) {
+  if (!s || s.phase !== "finished" || s.phonesRevealed !== false) {
+    clearTimeout(revealTimer);
+    revealTimer = null;
+    return;
+  }
+  if (revealTimer) return;
+  const finishedMs = s.finishedAt && s.finishedAt.toMillis ? s.finishedAt.toMillis() : Date.now();
+  const wait = Math.max(0, finishedMs + PHONE_REVEAL_DELAY_MS - Date.now());
+  const sessionId = s.sessionId;
   revealTimer = setTimeout(() => {
     revealTimer = null;
     revealToPhones(sessionId);
-  }, PHONE_REVEAL_DELAY_MS);
-  render();
+  }, wait);
 }
 
 async function revealToPhones(sessionId) {
@@ -191,7 +204,9 @@ async function revealToPhones(sessionId) {
 
 // ---------- CSVエクスポート ----------
 function csvEscape(v) {
-  const s = String(v ?? "");
+  let s = String(v ?? "");
+  // 「=」「+」「-」「@」で始まる文字(数値を除く)は、Excel などで数式として動かないよう先頭に ' を付ける
+  if (typeof v === "string" && /^[=+\-@\t\r]/.test(s) && !/^[-+]?\d+(\.\d+)?$/.test(s)) s = "'" + s;
   if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
   return s;
 }
@@ -341,6 +356,7 @@ function render() {
 
 onSnapshot(STATE_DOC, (snap) => {
   currentState = snap.exists() ? snap.data() : { sessionId: null, currentQuestion: -1, phase: "lobby" };
+  ensureRevealTimer(currentState);
   render();
 });
 

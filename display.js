@@ -164,13 +164,13 @@ function renderResultsBody(q, qIndex, votes) {
       const isCorrectOpt = q.correct.includes(o.key);
       return `
         <div class="bar-row">
-          <div class="bar-label"><span>${o.key}. ${escapeHtml(o.text)} ${isCorrectOpt ? '<span class="correct-tag">正解</span>' : ""}</span><span>${count}人 (${pct}%)</span></div>
+          <div class="bar-label"><span>${escapeHtml(o.key)}. ${escapeHtml(o.text)} ${isCorrectOpt ? '<span class="correct-tag">正解</span>' : ""}</span><span>${count}人 (${pct}%)</span></div>
           <div class="bar-track"><div class="bar-fill ${isCorrectOpt ? "correct" : ""}" style="width:${pct}%"></div></div>
         </div>`;
     }).join("");
   } else if (q.type === "text") {
     const total = votes.length || 1;
-    const counts = {};
+    const counts = Object.create(null); // 「constructor」などの回答でも正しく数える
     const correctAnswers = new Set();
     votes.forEach(v => {
       const key = String(v.answer).trim();
@@ -245,10 +245,14 @@ function renderFinishedView() {
   }
   const key = `${s.sessionId}_final`;
   if (!finishStage || finishStage.key !== key) {
-    // 終了した瞬間を見ていたときだけドラムロールから始める(あとから開き直したときはすぐ結果を出す)
+    // 終了した瞬間を見ていたときはドラムロールから始める。
+    // あとから開き直したときは、終了時刻から数えた残りの分だけドラムロールする
+    // (開き直した時刻から数えると、スマホへの公開より発表が遅れてしまう)
     const finishedMs = s.finishedAt && s.finishedAt.toMillis ? s.finishedAt.toMillis() : 0;
-    const recent = finishedMs > 0 && Date.now() - finishedMs < 15000;
-    finishStage = { key, revealAt: (sawFinishLive || recent) ? Date.now() + DRUMROLL_MS : 0, drumPlayed: false };
+    let revealAt = 0;
+    if (sawFinishLive) revealAt = Date.now() + DRUMROLL_MS;
+    else if (finishedMs > 0 && finishedMs + DRUMROLL_MS > Date.now()) revealAt = finishedMs + DRUMROLL_MS;
+    finishStage = { key, revealAt, drumPlayed: false };
   }
 
   const wait = finishStage.revealAt - Date.now();
