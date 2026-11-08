@@ -13,10 +13,10 @@ export const DIFFICULTY = {
   normal: { label: "ふつう",     stars: "★★",   points: 50 },
   hard:   { label: "むずかしい", stars: "★★★", points: 100 },
 };
-const SPEED_HALF_MS = 20000;   // この時間で満点の半分になる
-const MIN_RATE = 0.5;          // 遅くても満点の半分はもらえる
-const STREAK_STEP = 0.1;       // 1連続ごとに満点の10%
-const STREAK_MAX = 0.5;        // ボーナスは最大で満点の50%
+export const SPEED_HALF_MS = 20000;   // この時間で満点の半分になる
+export const MIN_RATE = 0.5;          // 遅くても満点の半分はもらえる
+export const STREAK_STEP = 0.1;       // 1連続ごとに満点の10%
+export const STREAK_MAX = 0.5;        // ボーナスは最大で満点の50%
 
 export function difficultyOf(q) {
   return DIFFICULTY[q && q.difficulty] || DIFFICULTY.normal;

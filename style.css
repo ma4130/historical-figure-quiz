@@ -258,6 +258,19 @@ table.rank tbody tr:nth-child(3) td:first-child::before { content: "🥉 "; }
   text-align: center;
 }
 
+/* 待ち画面の「問題数・点数のしくみ」 */
+.lobby-grid { display: grid; gap: 16px; }
+.rules-card { text-align: left; }
+.rules-count { font-size: 1.4rem; font-weight: 800; text-align: center; }
+.rules-count b { font-size: 2.2em; color: var(--primary); margin: 0 0.1em; }
+.rules-levels { list-style: none; padding: 0; margin: 6px 0 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: center; }
+.rules-levels b { margin-left: 0.4em; }
+.rules-stars { color: #f59e0b; }
+.rules-head { font-size: 1.3rem; font-weight: 800; color: var(--primary); margin: 10px 0 6px; }
+.rules-list { margin: 0; padding-left: 1.3em; line-height: 1.7; }
+.rules-list li { margin-bottom: 4px; }
+.rules-max { margin-top: 12px; font-weight: 700; color: var(--muted); text-align: center; }
+
 /* 投影用画面(display.html): PCをプロジェクターに映す前提。
    画面幅(vw)に比例させ、教室の後ろからも読める大きさにする */
 .display-page .wrap { max-width: 94vw; padding: 1.5vw 2vw 3vw; }
@@ -274,6 +287,23 @@ table.rank tbody tr:nth-child(3) td:first-child::before { content: "🥉 "; }
 .display-page table.rank td { font-size: clamp(1.3rem, 2.3vw, 3rem); padding: 0.9vw 1vw; }
 .display-page .qr-url { font-size: clamp(1.1rem, 1.8vw, 2.4rem); color: var(--text); font-weight: 700; }
 .display-page .qr-wrap #joinQrCanvas { padding: 1.2vw; border-width: 5px; }
+@media (min-width: 900px) {
+  .display-page .lobby-grid { grid-template-columns: auto 1fr; align-items: stretch; gap: 2vw; }
+  .display-page .lobby-grid .card { margin-bottom: 0; }
+  /* 説明と並べるときは、16:9 の画面に収まるよう QR を少し小さくして余白を詰める */
+  .display-page .lobby-grid .qr-wrap { gap: 0.6vw; padding-top: 1.6vw; padding-bottom: 1.6vw; }
+  .display-page .lobby-grid .qr-wrap p { margin: 0; }
+  .display-page .lobby-grid .qr-wrap .badge { margin-bottom: 0; }
+  .display-page .lobby-grid .qr-wrap #joinQrCanvas img,
+  .display-page .lobby-grid .qr-wrap #joinQrCanvas canvas { width: clamp(220px, min(21vw, 40vh), 480px) !important; }
+}
+.display-page .rules-card { display: flex; flex-direction: column; justify-content: center; }
+.display-page .rules-count { font-size: clamp(1.8rem, 3vw, 4rem); }
+.display-page .rules-levels { font-size: clamp(1.05rem, 1.6vw, 2.2rem); flex-direction: column; align-items: center; gap: 0.2vw; margin: 0.4vw 0 1vw; }
+.display-page .rules-head { font-size: clamp(1.5rem, 2.6vw, 3.4rem); margin: 0.6vw 0 0.6vw; }
+.display-page .rules-list { font-size: clamp(1.05rem, 1.55vw, 2.1rem); line-height: 1.5; }
+.display-page .rules-max { font-size: clamp(1rem, 1.5vw, 2rem); margin-top: 1vw; }
+
 .display-page .qr-wrap #joinQrCanvas img,
 .display-page .qr-wrap #joinQrCanvas canvas { width: clamp(240px, 24vw, 520px) !important; height: auto !important; image-rendering: pixelated; }
 /* 結果発表: 横長画面ではグラフ(左)とランキング(右)を並べてスクロール不要にする */

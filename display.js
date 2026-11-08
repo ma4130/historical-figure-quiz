@@ -5,10 +5,10 @@ import {
   onSnapshot, query, where,
 } from "./firebase.js";
 import { runCountdown, stopCountdown, isFirstReveal, animateReveal, celebrate, prizeImageHtml } from "./effects.js";
-import { computeStandings, difficultyText, formatPoints } from "./scoring.js";
+import { computeStandings, difficultyText, formatPoints, DIFFICULTY, difficultyOf, fullPoints, SPEED_HALF_MS, MIN_RATE, STREAK_STEP, STREAK_MAX } from "./scoring.js";
 import { play, enableSound, isSoundEnabled, onSoundChange, mountSoundControls } from "./sound.js";
 import { DRUMROLL_MS } from "./settings.js";
-import { questionsReady } from "./questions-store.js";
+import { questionsReady, onQuestionsChange } from "./questions-store.js";
 
 const QUESTIONS = window.QUESTIONS;
 const appEl = document.getElementById("app");
@@ -30,12 +30,15 @@ function renderQr() {
   // index.htmlを省略した短いURLにすることで、QRコードのモジュール数を減らして読み取りやすくする
   const studentUrl = new URL(".", window.location.href).href;
   render(`
-    <div class="card qr-wrap">
-      <div class="badge">参加はこちらから</div>
-      <div id="joinQrCanvas"></div>
-      <div class="qr-url">${studentUrl}</div>
-      <p class="muted">クイズが始まるまでお待ちください…</p>
-      <div id="soundPrompt"></div>
+    <div class="lobby-grid">
+      <div class="card qr-wrap">
+        <div class="badge">参加はこちらから</div>
+        <div id="joinQrCanvas"></div>
+        <div class="qr-url">${studentUrl}</div>
+        <p class="muted">クイズが始まるまでお待ちください…</p>
+        <div id="soundPrompt"></div>
+      </div>
+      ${rulesCardHtml()}
     </div>`);
   drawSoundPrompt();
   if (typeof QRCode !== "undefined") {
@@ -47,6 +50,32 @@ function renderQr() {
       correctLevel: QRCode.CorrectLevel.L,
     });
   }
+}
+
+// 待ち画面に出す「問題数」と「点数のしくみ」。数字は scoring.js の設定から作る
+function rulesCardHtml() {
+  const total = QUESTIONS.length;
+  const counts = Object.entries(DIFFICULTY)
+    .map(([key, d]) => ({ d, n: QUESTIONS.filter((q) => difficultyOf(q) === d).length }))
+    .filter((x) => x.n > 0)
+    .map((x) => `<li><span class="rules-stars">${x.d.stars}</span> ${x.d.label}(満点${formatPoints(x.d.points)}点)<b>${x.n}問</b></li>`)
+    .join("");
+  const maxTotal = QUESTIONS.reduce((a, q) => a + fullPoints(q), 0);
+  const halfSec = Math.round(SPEED_HALF_MS / 1000);
+  const minPct = Math.round(MIN_RATE * 100);
+  return `
+    <div class="card rules-card">
+      <div class="rules-count">全<b>${total}</b>問</div>
+      ${counts ? `<ul class="rules-levels">${counts}</ul>` : ""}
+      <div class="rules-head">⏱ 早く答えるほど高得点!</div>
+      <ul class="rules-list">
+        <li>正解すると満点から<b>1秒ごとに少しずつ減った点</b>がもらえます</li>
+        <li>${halfSec}秒で満点の半分。遅くても半分(${minPct}%)はもらえます</li>
+        <li>まちがい・答えなかったときは 0点</li>
+        <li>🔥 連続正解でボーナス(2連続で+${Math.round(STREAK_STEP * 100)}%、最大+${Math.round(STREAK_MAX * 100)}%)</li>
+      </ul>
+      <div class="rules-max">満点の合計 ${formatPoints(maxTotal)}点(ボーナスは別)</div>
+    </div>`;
 }
 
 function drawSoundPrompt() {
@@ -327,6 +356,10 @@ function closePrize() {
 // ---------- 進行状態 ----------
 // 問題作成画面で保存した問題を読み込んでから始める
 await questionsReady;
+// 問題作成画面で保存されたら、待ち画面の問題数を更新する
+onQuestionsChange(() => {
+  if (currentState && (!currentState.sessionId || currentState.phase === "lobby")) renderQr();
+});
 let goPlayedKey = null; // 「ポーン」を鳴らした問題
 onSnapshot(STATE_DOC, (snap) => {
   const prevPhase = currentState ? currentState.phase : null;
