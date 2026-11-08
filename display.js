@@ -52,12 +52,13 @@ function renderQr() {
   }
 }
 
-// 待ち画面に出す「問題数」と「早く答えるほど高得点」
+// 待ち画面に出す「問題数」「早く答えるほど高得点」「優勝者にプレゼント」
 function rulesCardHtml() {
   return `
     <div class="card rules-card">
       <div class="rules-count">全<b>${QUESTIONS.length}</b>問</div>
       <div class="rules-head">⏱ 早く答えるほど<br>点数が高くなります!</div>
+      <div class="rules-prize">🎁 優勝者だけに<br>プレゼントがあります!</div>
     </div>`;
 }
 

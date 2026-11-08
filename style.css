@@ -264,6 +264,7 @@ table.rank tbody tr:nth-child(3) td:first-child::before { content: "🥉 "; }
 .rules-count { font-size: 1.6rem; font-weight: 800; }
 .rules-count b { font-size: 2.4em; color: var(--primary); margin: 0 0.1em; }
 .rules-head { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-top: 12px; line-height: 1.5; }
+.rules-prize { font-size: 1.3rem; font-weight: 800; color: #b45309; margin-top: 12px; line-height: 1.5; }
 
 /* 投影用画面(display.html): PCをプロジェクターに映す前提。
    画面幅(vw)に比例させ、教室の後ろからも読める大きさにする */
@@ -294,7 +295,8 @@ table.rank tbody tr:nth-child(3) td:first-child::before { content: "🥉 "; }
 }
 .display-page .rules-card { display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .display-page .rules-count { font-size: clamp(2.4rem, 4.4vw, 6rem); }
-.display-page .rules-head { font-size: clamp(1.8rem, 3.4vw, 4.6rem); margin-top: 2.5vw; }
+.display-page .rules-head { font-size: clamp(1.6rem, 3vw, 4.2rem); margin-top: 2vw; }
+.display-page .rules-prize { font-size: clamp(1.6rem, 3vw, 4.2rem); margin-top: 2vw; }
 
 .display-page .qr-wrap #joinQrCanvas img,
 .display-page .qr-wrap #joinQrCanvas canvas { width: clamp(240px, 24vw, 520px) !important; height: auto !important; image-rendering: pixelated; }
