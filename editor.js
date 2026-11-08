@@ -187,7 +187,7 @@ function questionCard(m, qi) {
           </select>
         </label>
         <label class="field-label">満点
-          <input type="number" min="1" step="50" value="${escapeHtml(m.points)}" data-f="points" data-q="${qi}">
+          <input type="number" min="1" step="1" value="${escapeHtml(m.points)}" data-f="points" data-q="${qi}">
         </label>
       </div>
       <label class="field-label">問題文</label>
@@ -374,7 +374,7 @@ async function save() {
 function download() {
   const header = `// クイズの問題データ(問題作成画面から書き出し: ${new Date().toLocaleString("ja-JP")})\n` +
     `// type: "single"=1つ選ぶ, "multi"=全部選ぶ, "text"=文字で答える, "order"=並べ替え\n` +
-    `// difficulty: "easy"(500点) / "normal"(1000点) / "hard"(1500点)。points を書くとその点数が満点になる\n`;
+    `// difficulty: "easy"(30点) / "normal"(50点) / "hard"(100点)。points を書くとその点数が満点になる\n`;
   const body = `window.QUESTIONS = ${JSON.stringify(buildQuestions(), null, 2)};\n`;
   const blob = new Blob([header + body], { type: "text/javascript;charset=utf-8" });
   const url = URL.createObjectURL(blob);

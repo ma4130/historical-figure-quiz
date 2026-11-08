@@ -9,9 +9,9 @@
 //   それも同じなら同じ順位にする。
 
 export const DIFFICULTY = {
-  easy:   { label: "かんたん",   stars: "★",     points: 500 },
-  normal: { label: "ふつう",     stars: "★★",   points: 1000 },
-  hard:   { label: "むずかしい", stars: "★★★", points: 1500 },
+  easy:   { label: "かんたん",   stars: "★",     points: 30 },
+  normal: { label: "ふつう",     stars: "★★",   points: 50 },
+  hard:   { label: "むずかしい", stars: "★★★", points: 100 },
 };
 const SPEED_HALF_MS = 20000;   // この時間で満点の半分になる
 const MIN_RATE = 0.5;          // 遅くても満点の半分はもらえる
@@ -27,7 +27,7 @@ export function fullPoints(q) {
   return difficultyOf(q).points;
 }
 
-// 第○問のバッジに付ける「★★ ふつう・1000点」
+// 第○問のバッジに付ける「★★ ふつう・50点」
 export function difficultyText(q) {
   const d = difficultyOf(q);
   return `${d.stars} ${d.label}・${formatPoints(fullPoints(q))}点`;
