@@ -5,7 +5,7 @@ import {
   onSnapshot, query, where,
 } from "./firebase.js";
 import { runCountdown, stopCountdown, isFirstReveal, animateReveal, celebrate, prizeImageHtml } from "./effects.js";
-import { computeStandings, difficultyText, formatPoints, DIFFICULTY, difficultyOf, fullPoints, SPEED_HALF_MS, MIN_RATE, STREAK_STEP, STREAK_MAX } from "./scoring.js";
+import { computeStandings, difficultyText, formatPoints } from "./scoring.js";
 import { play, enableSound, isSoundEnabled, onSoundChange, mountSoundControls } from "./sound.js";
 import { DRUMROLL_MS } from "./settings.js";
 import { questionsReady, onQuestionsChange } from "./questions-store.js";
@@ -52,29 +52,12 @@ function renderQr() {
   }
 }
 
-// 待ち画面に出す「問題数」と「点数のしくみ」。数字は scoring.js の設定から作る
+// 待ち画面に出す「問題数」と「早く答えるほど高得点」
 function rulesCardHtml() {
-  const total = QUESTIONS.length;
-  const counts = Object.entries(DIFFICULTY)
-    .map(([key, d]) => ({ d, n: QUESTIONS.filter((q) => difficultyOf(q) === d).length }))
-    .filter((x) => x.n > 0)
-    .map((x) => `<li><span class="rules-stars">${x.d.stars}</span> ${x.d.label}(満点${formatPoints(x.d.points)}点)<b>${x.n}問</b></li>`)
-    .join("");
-  const maxTotal = QUESTIONS.reduce((a, q) => a + fullPoints(q), 0);
-  const halfSec = Math.round(SPEED_HALF_MS / 1000);
-  const minPct = Math.round(MIN_RATE * 100);
   return `
     <div class="card rules-card">
-      <div class="rules-count">全<b>${total}</b>問</div>
-      ${counts ? `<ul class="rules-levels">${counts}</ul>` : ""}
-      <div class="rules-head">⏱ 早く答えるほど高得点!</div>
-      <ul class="rules-list">
-        <li>正解すると満点から<b>1秒ごとに少しずつ減った点</b>がもらえます</li>
-        <li>${halfSec}秒で満点の半分。遅くても半分(${minPct}%)はもらえます</li>
-        <li>まちがい・答えなかったときは 0点</li>
-        <li>🔥 連続正解でボーナス(2連続で+${Math.round(STREAK_STEP * 100)}%、最大+${Math.round(STREAK_MAX * 100)}%)</li>
-      </ul>
-      <div class="rules-max">満点の合計 ${formatPoints(maxTotal)}点(ボーナスは別)</div>
+      <div class="rules-count">全<b>${QUESTIONS.length}</b>問</div>
+      <div class="rules-head">⏱ 早く答えるほど<br>点数が高くなります!</div>
     </div>`;
 }
 
